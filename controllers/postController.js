@@ -1,15 +1,25 @@
-const posts = require("../data/posts.js")
+const dbConnection = require("../data/dbConnection.js")
 
 //------------>^.^<---------INDEX-------------------------------------
 function index(req, res) {
 	console.log(req.query);
-	let results = posts;
-	if (req.query.tags) {
-		results = posts.filter(post => post.tags.find(tag => tag.toLowerCase() == req.query.tags.toLowerCase()) ? true : false);
-		//results = posts.find(post => post.tags.toLowerCase() == req.query.tags.toLowerCase()) ? true : false
-	}
 
-	res.json(results);
+	const sqlQuery = "SELECT * FROM posts";
+	dbConnection.query(sqlQuery, (error, rows) => {
+		console.log("connesso index");
+		if (error) {
+			return res.status(500).json({ error: "db error", message: "erore recupero dati dal DB" });
+		}
+
+		let results = rows;
+		res.json(results);
+	})
+
+	// if (req.query.tags) {
+	// 	results = posts.filter(post => post.tags.find(tag => tag.toLowerCase() == req.query.tags.toLowerCase()) ? true : false);
+	// 	//results = posts.find(post => post.tags.toLowerCase() == req.query.tags.toLowerCase()) ? true : false
+	// }
+
 }
 //--------------------------SHOW------------------/¨\7-----------------
 function show(req, res) {
