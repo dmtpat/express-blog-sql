@@ -8,7 +8,7 @@ function index(req, res) {
 	dbConnection.query(sqlQuery, (error, rows) => {
 		console.log("connesso index");
 		if (error) {
-			return res.status(500).json({ error: "db error", message: "erore recupero dati dal DB" });
+			return res.status(500).json({ error: "DB error", message: "erore recupero dati dal DB" });
 		}
 
 		let results = rows;
@@ -88,14 +88,21 @@ function modify(req, res) {
 //---------(^..^)S----------DESTROY--------------------------------
 function destroy(req, res) {
 	const id = Number(req.params.id)
-	const result = posts.find(post => post.id == id)
+	// const result = posts.find(post => post.id == id)
 
-	if (!result) {
-		return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
-	}
-	posts.splice(posts.indexOf(result), 1);
-	console.log(`pizza ${id} eliminata`, posts)
-	return res.sendStatus(204);
+	// if (!result) {
+	// 	return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
+	// }
+	const sqlQuery = "DELETE FROM posts WHERE id =?";
+	dbConnection.query(sqlQuery, [id], (error) => {
+		if (error) {
+			res.status(500).json({ error: "DB error", message: "errore recupero dati DB " })
+		}
+		console.log("post eliminato");
+		return res.sendStatus(204);
+	})
+	// console.log(`pizza ${id} eliminata`, posts)
+	// posts.splice(posts.indexOf(result), 1);
 
 }
 
