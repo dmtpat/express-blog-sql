@@ -1,6 +1,6 @@
 const dbConnection = require("../data/dbConnection.js")
 
-//------------>^.^<---------INDEX-------------------------------------
+//------------>^.^<---------INDEX-DB----------------------------------
 function index(req, res) {
 	console.log(req.query);
 
@@ -24,12 +24,22 @@ function index(req, res) {
 //--------------------------SHOW------------------/¨\7-----------------
 function show(req, res) {
 	const id = Number(req.params.id)
-	const result = posts.find(post => post.id == id)
 
-	if (!result) {
-		return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
-	}
-	res.send(result);
+	const sqlQuery = "SELECT * FROM posts WHERE id = ?";
+	dbConnection.query(sqlQuery, [id], (error, row) => {
+		if (error) {
+			return res.status(500).json({ error: "DB error", message: "errore nel recupero dati Db" });
+		}
+		const result = row;
+
+		if (!result) {
+			return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
+		}
+		res.send(result);
+	})
+
+	// const result = posts.find(post => post.id == id)
+
 }
 //--------------------------STORE--------(^..^)S----------------------
 function store(req, res) {
@@ -85,7 +95,7 @@ function modify(req, res) {
 	res.status(200).json(result);
 	// res.send(`Vuoi aggiornare (parzialmente) il post numero: ${req.params.id}`);
 }
-//---------(^..^)S----------DESTROY--------------------------------
+//---------(^..^)S----------DESTROY-DB-----------------------------
 function destroy(req, res) {
 	const id = Number(req.params.id)
 	// const result = posts.find(post => post.id == id)
