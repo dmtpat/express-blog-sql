@@ -12,6 +12,10 @@ function index(req, res) {
 		}
 
 		let results = rows;
+
+		if (!result) {
+			return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
+		}
 		res.json(results);
 	})
 
@@ -21,7 +25,7 @@ function index(req, res) {
 	// }
 
 }
-//--------------------------SHOW------------------/¨\7-----------------
+//--------------------------SHOW-DB---------------/¨\7-----------------
 function show(req, res) {
 	const id = Number(req.params.id)
 
@@ -32,7 +36,7 @@ function show(req, res) {
 		}
 		const result = row;
 
-		if (!result) {
+		if (!result) { // oppure if (results.lenght === 0)
 			return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
 		}
 		res.send(result);
