@@ -64,17 +64,17 @@ function show(req, res) {
 	// const result = posts.find(post => post.id == id)
 
 }
-//--------------------------STORE--------(^..^)S----------------------
+//--------------------------STORE-DB-----(^..^)S----------------------
 function store(req, res) {
 	console.log(`Vuoi creare un nuovo post`, req.body);
-	const sqlQuery = "INSERT INTO posts (title, content, image) VALUES (?, ?, ?)"
-	const newPost = [req.body.title, req.body.content, req.body.image]
+	const sqlQuery = "INSERT INTO posts (title, content, image) VALUES (?, ?, ?)";
+	const paramsArray = [req.body.title, req.body.content, req.body.image];
 
-	dbConnection.query(sqlQuery, newPost, (error, rows) => {
+	dbConnection.query(sqlQuery, paramsArray, (error, rows) => {
 		if (error) {
-			return res.status(500).json({ error: "DB Error", message: "Errore nel DB" })
+			return res.status(500).json({ error: "DB Error", message: "Errore nel DB" });
 		}
-		console.log(rows.insertId)
+		console.log(rows.insertId);
 		dbConnection.query("SELECT * FROM posts WHERE id = ?", rows.insertId, (error, row) => {
 
 			const results = row[0];
@@ -84,23 +84,41 @@ function store(req, res) {
 
 	});
 }
-//--------------------------UPDATE----->^.^<-------------------------
+//--------------------------UPDATE-DB-->^.^<-------------------------
 
 function update(req, res) {
 	const id = Number(req.params.id)
-	const result = posts.find(post => post.id == id)
+	const sqlQuery = `UPDATE posts
+		SET title = ?, content = ?, image = ?
+		WHERE id= ?
+	`;
+	const paramsArray = [req.body.title, req.body.content, req.body.image, id];
 
-	if (!result) {
-		return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
-	}
-	console.log("risultato", result)
-	console.log("Body", req.body)
-	result.title = req.body.title;
-	result.content = req.body.content;
-	result.image = req.body.image;
-	result.tags = req.body.tags;
+	dbConnection.query(sqlQuery, paramsArray, (error, rows) => {
+		if (error) {
+			return res.status(500).json({ error: "DB Error", message: "Errore nel DB" });
+		}
+		dbConnection.query("SELECT * FROM posts WHERE id = ?", [id], (error, row) => {
+			if (row.length == 0) {
+				return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
+			}
+			const results = row[0];
+			return res.status(200).json(results);
+		})
+	});
 
-	res.status(200).json(result);
+
+	// if (!result) {
+	// 	return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
+	// }
+	// console.log("risultato", result)
+	// console.log("Body", req.body)
+	// result.title = req.body.title;
+	// result.content = req.body.content;
+	// result.image = req.body.image;
+	// result.tags = req.body.tags;
+
+	// res.status(200).json(result);
 }
 //--------------------------MODIFY--------------/¨\7------------
 function modify(req, res) {
