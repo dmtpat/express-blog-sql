@@ -34,11 +34,11 @@ function show(req, res) {
 		if (error) {
 			return res.status(500).json({ error: "DB error", message: "errore nel recupero dati Db" });
 		}
-		const result = row;
 
-		if (!result) { // oppure if (results.lenght === 0)
+		if (results.lenght === 0) {
 			return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
 		}
+		const result = row[0];
 		res.send(result);
 	})
 
