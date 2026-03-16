@@ -162,11 +162,15 @@ function destroy(req, res) {
 	// 	return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
 	// }
 	const sqlQuery = "DELETE FROM posts WHERE id =?";
-	dbConnection.query(sqlQuery, [id], (error) => {
+	dbConnection.query(sqlQuery, [id], (error, rows) => {
 		if (error) {
 			res.status(500).json({ error: "DB error", message: "errore recupero dati DB " })
 		}
 		console.log("post eliminato");
+		console.log(rows);
+		if (rows.affectedRows == 0) {
+			return res.status(404).json({ error: "Not Found", message: " Post NOT FOUND" })
+		}
 		return res.sendStatus(204);
 	})
 	// console.log(`pizza ${id} eliminata`, posts)
