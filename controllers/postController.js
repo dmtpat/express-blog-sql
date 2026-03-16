@@ -1,5 +1,9 @@
 const dbConnection = require("../data/dbConnection.js")
-
+function errorDb(res, error) {
+	if (error) {
+		return res.status(500).json({ error: "DB error", message: "erore recupero dati tags dal DB" });
+	}
+}
 //------------>^.^<---------INDEX-DB----------------------------------
 function index(req, res) {
 	console.log(req.query);
@@ -9,10 +13,7 @@ function index(req, res) {
 	const tagsQuery = "SELECT id FROM blog_db.tags WHERE label= ?";
 	if (req.query) {
 		dbConnection.query(tagsQuery, [req.query.tags], (error, rows) => {
-			if (error) {
-				return res.status(500).json({ error: "DB error", message: "erore recupero dati tags dal DB" });
-			}
-			console.log(rows[0].id);
+			errorDb(res, error);
 			tagIdArray.push(rows[0].id);
 			sqlQuery = `SELECT posts.*
 				FROM blog_db.post_tag
@@ -22,34 +23,22 @@ function index(req, res) {
 			`;
 			dbConnection.query(sqlQuery, tagIdArray, (error, rows) => {
 				console.log("connesso index");
-				if (error) {
-					return res.status(500).json({ error: "DB error", message: "erore recupero dati dal DB" });
-				}
-
-				let results = rows;
-
-				console.log(results)
-				if (!results) {
+				errorDb(res, error);
+				if (!rows) {
 					return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
 				}
-				res.json(results);
+				res.json(rows);
 			})
 		})
 	} else {
 
 		dbConnection.query(sqlQuery, (error, rows) => {
 			console.log("connesso index");
-			if (error) {
-				return res.status(500).json({ error: "DB error", message: "erore recupero dati dal DB" });
-			}
-
-			let results = rows;
-
-			console.log(results)
-			if (!results) {
+			errorDb(res, error);
+			if (!rows) {
 				return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
 			}
-			res.json(results);
+			res.json(rows);
 		})
 	}
 
@@ -70,9 +59,7 @@ function show(req, res) {
 
 
 	dbConnection.query(sqlQuery, paramsArray, (error, row) => {
-		if (error) {
-			return res.status(500).json({ error: "DB error", message: "errore nel recupero dati Db" });
-		}
+		errorDb(res, error);
 		console.log(row);
 		if (row.length == 0) {
 			return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
@@ -86,9 +73,7 @@ function show(req, res) {
 		`;
 
 		dbConnection.query(sqlQuery, paramsArray, (error, row) => {
-			if (error) {
-				return res.status(500).json({ error: "DB error", message: "errore nel recupero dati Db" });
-			}
+			errorDb(res, error);
 			console.log(row);
 			const tags = row.map(tag => tag.tags)
 			console.log(tags)
@@ -107,12 +92,10 @@ function store(req, res) {
 	const paramsArray = [req.body.title, req.body.content, req.body.image];
 
 	dbConnection.query(sqlQuery, paramsArray, (error, rows) => {
-		if (error) {
-			return res.status(500).json({ error: "DB Error", message: "Errore nel DB" });
-		}
+		errorDb(res, error);
 		console.log(rows.insertId);
 		dbConnection.query("SELECT * FROM posts WHERE id = ?", rows.insertId, (error, row) => {
-
+			errorDb(res, error);
 			const results = row[0];
 			return res.status(201).json(results);
 		})
@@ -131,10 +114,9 @@ function update(req, res) {
 	const paramsArray = [req.body.title, req.body.content, req.body.image, id];
 
 	dbConnection.query(sqlQuery, paramsArray, (error, rows) => {
-		if (error) {
-			return res.status(500).json({ error: "DB Error", message: "Errore nel DB" });
-		}
+		errorDb(res, error);
 		dbConnection.query("SELECT * FROM posts WHERE id = ?", [id], (error, row) => {
+			errorDb(res, error);
 			if (row.length == 0) {
 				return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
 			}
@@ -143,18 +125,6 @@ function update(req, res) {
 		})
 	});
 
-
-	// if (!result) {
-	// 	return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
-	// }
-	// console.log("risultato", result)
-	// console.log("Body", req.body)
-	// result.title = req.body.title;
-	// result.content = req.body.content;
-	// result.image = req.body.image;
-	// result.tags = req.body.tags;
-
-	// res.status(200).json(result);
 }
 //--------------------------MODIFY-DB-----------/¨\7------------
 function modify(req, res) {
@@ -176,10 +146,9 @@ function modify(req, res) {
 	console.log("sql Query", sqlQuery);
 	console.log("paramsArray", paramsArray)
 	dbConnection.query(sqlQuery, paramsArray, (error, rows) => {
-		if (error) {
-			return res.status(500).json({ error: "DB Error", message: "Errore nel DB" });
-		}
+		errorDb(res, error);
 		dbConnection.query("SELECT * FROM posts WHERE id = ?", [id], (error, row) => {
+			errorDb(res, error);
 			if (row.length == 0) {
 				return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
 			}
@@ -199,9 +168,7 @@ function destroy(req, res) {
 	// }
 	const sqlQuery = "DELETE FROM posts WHERE id =?";
 	dbConnection.query(sqlQuery, [id], (error, rows) => {
-		if (error) {
-			res.status(500).json({ error: "DB error", message: "errore recupero dati DB " })
-		}
+		errorDb(res, error);
 		console.log("post eliminato");
 		console.log(rows);
 		if (rows.affectedRows == 0) {
