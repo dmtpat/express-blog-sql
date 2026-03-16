@@ -120,22 +120,38 @@ function update(req, res) {
 
 	// res.status(200).json(result);
 }
-//--------------------------MODIFY--------------/¨\7------------
+//--------------------------MODIFY-DB-----------/¨\7------------
 function modify(req, res) {
 	const id = Number(req.params.id)
-	const result = posts.find(post => post.id == id)
+	// const result = posts.find(post => post.id == id)
 
-	if (!result) {
-		return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
-	}
-	const allowedParam = ["title", "content", "image", "tags"];
+	const allowedParam = ["title", "content", "image"];
+
+	const paramsArray = [];
+	const queryModule = [];
 	for (const element of allowedParam) {
 		if (req.body[element]) {
-			result[element] = req.body[element]
+			queryModule.push(`${element} = ?`);
+			paramsArray.push(req.body[element]);
 		}
 	}
-	res.status(200).json(result);
-	// res.send(`Vuoi aggiornare (parzialmente) il post numero: ${req.params.id}`);
+	const sqlQuery = `UPDATE posts SET ${queryModule.join(", ")} WHERE id = ?`;
+	paramsArray.push(id);
+	console.log("sql Query", sqlQuery);
+	console.log("paramsArray", paramsArray)
+	dbConnection.query(sqlQuery, paramsArray, (error, rows) => {
+		if (error) {
+			return res.status(500).json({ error: "DB Error", message: "Errore nel DB" });
+		}
+		dbConnection.query("SELECT * FROM posts WHERE id = ?", [id], (error, row) => {
+			if (row.length == 0) {
+				return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
+			}
+			const results = row[0];
+			return res.status(200).json(results);
+		})
+	})
+
 }
 //---------(^..^)S----------DESTROY-DB-----------------------------
 function destroy(req, res) {
