@@ -67,21 +67,22 @@ function show(req, res) {
 //--------------------------STORE--------(^..^)S----------------------
 function store(req, res) {
 	console.log(`Vuoi creare un nuovo post`, req.body);
-	const idArray = [];
-	posts.forEach(post => { idArray.push(post.id); });
-	const maxId = Math.max(...idArray)
-	console.log("il max id è", maxId);
-	const newPost = {
-		id: maxId + 1,
-		title: req.body.title,
-		content: req.body.content,
-		image: req.body.image,
-		tags: req.body.tags
-	}
-	posts.push(newPost);
-	console.log(posts);
-	return res.status(201).json(newPost);
+	const sqlQuery = "INSERT INTO posts (title, content, image) VALUES (?, ?, ?)"
+	const newPost = [req.body.title, req.body.content, req.body.image]
 
+	dbConnection.query(sqlQuery, newPost, (error, rows) => {
+		if (error) {
+			return res.status(500).json({ error: "DB Error", message: "Errore nel DB" })
+		}
+		console.log(rows.insertId)
+		dbConnection.query("SELECT * FROM posts WHERE id = ?", rows.insertId, (error, row) => {
+
+			const results = row[0];
+			return res.status(201).json(results);
+		})
+
+
+	});
 }
 //--------------------------UPDATE----->^.^<-------------------------
 
