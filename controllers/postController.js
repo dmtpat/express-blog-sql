@@ -3,21 +3,57 @@ const dbConnection = require("../data/dbConnection.js")
 //------------>^.^<---------INDEX-DB----------------------------------
 function index(req, res) {
 	console.log(req.query);
+	const tagIdArray = [];
+	let sqlQuery = "SELECT * FROM posts";
 
-	const sqlQuery = "SELECT * FROM posts";
-	dbConnection.query(sqlQuery, (error, rows) => {
-		console.log("connesso index");
-		if (error) {
-			return res.status(500).json({ error: "DB error", message: "erore recupero dati dal DB" });
-		}
+	const tagsQuery = "SELECT id FROM blog_db.tags WHERE label= ?";
+	if (req.query) {
+		dbConnection.query(tagsQuery, [req.query.tags], (error, rows) => {
+			if (error) {
+				return res.status(500).json({ error: "DB error", message: "erore recupero dati tags dal DB" });
+			}
+			console.log(rows[0].id);
+			tagIdArray.push(rows[0].id);
+			sqlQuery = `SELECT posts.*
+				FROM blog_db.post_tag
+				JOIN posts
+				ON post_tag.post_id= posts.id
+				WHERE tag_id = ?;
+			`;
+			dbConnection.query(sqlQuery, tagIdArray, (error, rows) => {
+				console.log("connesso index");
+				if (error) {
+					return res.status(500).json({ error: "DB error", message: "erore recupero dati dal DB" });
+				}
 
-		let results = rows;
+				let results = rows;
 
-		if (!results) {
-			return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
-		}
-		res.json(results);
-	})
+				console.log(results)
+				if (!results) {
+					return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
+				}
+				res.json(results);
+			})
+		})
+	} else {
+
+		dbConnection.query(sqlQuery, (error, rows) => {
+			console.log("connesso index");
+			if (error) {
+				return res.status(500).json({ error: "DB error", message: "erore recupero dati dal DB" });
+			}
+
+			let results = rows;
+
+			console.log(results)
+			if (!results) {
+				return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
+			}
+			res.json(results);
+		})
+	}
+
+
 
 	// if (req.query.tags) {
 	// 	results = posts.filter(post => post.tags.find(tag => tag.toLowerCase() == req.query.tags.toLowerCase()) ? true : false);
