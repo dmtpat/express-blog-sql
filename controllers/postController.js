@@ -13,7 +13,7 @@ function index(req, res) {
 
 		let results = rows;
 
-		if (!result) {
+		if (!results) {
 			return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
 		}
 		res.json(results);
@@ -30,18 +30,37 @@ function show(req, res) {
 	const id = Number(req.params.id)
 
 	const sqlQuery = "SELECT * FROM posts WHERE id = ?";
-	dbConnection.query(sqlQuery, [id], (error, row) => {
+	const paramsArray = [id]
+
+
+	dbConnection.query(sqlQuery, paramsArray, (error, row) => {
 		if (error) {
 			return res.status(500).json({ error: "DB error", message: "errore nel recupero dati Db" });
 		}
-
-		if (results.lenght === 0) {
+		console.log(row);
+		if (row.length == 0) {
 			return res.status(404).json({ error: "Not Found", message: "Post non trovato" })
 		}
-		const result = row[0];
-		res.send(result);
-	})
+		const results = row[0];
+		const sqlQuery = `SELECT tags.label as "tags"
+			FROM post_tag
+			JOIN tags
+			ON post_tag.tag_id= tags.id
+			WHERE post_tag.post_id = ?
+		`;
 
+		dbConnection.query(sqlQuery, paramsArray, (error, row) => {
+			if (error) {
+				return res.status(500).json({ error: "DB error", message: "errore nel recupero dati Db" });
+			}
+			console.log(row);
+			const tags = row.map(tag => tag.tags)
+			console.log(tags)
+			results.tags = tags
+			console.log(results)
+			res.send(results);
+		});
+	})
 	// const result = posts.find(post => post.id == id)
 
 }
