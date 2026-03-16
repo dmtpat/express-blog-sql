@@ -1,6 +1,7 @@
 # express-blog-sql
 
 Prendiamo le API precedentemente create per il vostro blog ed aggiungiamo la persistenza tramite la connessione a un DB
+## PT 1
 
 ### MILESTONE 1
 1. Importiamo il db in allegato su MySQL Workbench
@@ -27,3 +28,16 @@ Prendiamo le API precedentemente create per il vostro blog ed aggiungiamo la per
 ### BONUS
 - Facciamo sì che l’API di SHOW restituisca il post desiderato in formato JSON
 - Verifichiamo su Postman che la risposta sia corretta
+
+## PT 2
+
+- create un metodo di show che restituisca il singolo post
+- aggregate in show anche i dati relativi ai tag
+- scrivete il metodo di create
+- scrivete il metodo di update
+
+### Bonus
+- index con filtro per i tags
+- delete con 404
+- insert/update che restituiscono l'oggetto in questione
+- mysql2 con promise
